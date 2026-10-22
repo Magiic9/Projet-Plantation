@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/parcelles")
-@CrossOrigin(origins = "*")
 public class ParcelleController {
 
     @Autowired

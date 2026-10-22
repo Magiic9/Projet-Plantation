@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Borne de pointage · Plantation</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background: var(--vert-fonce); color: #fff; min-height: 100vh; user-select: none; }
+        .borne-entete { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; }
+        .borne-entete h1 { margin: 0; font-size: 1.3rem; }
+        .horloge { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .borne-entete .liens { display: flex; gap: 12px; align-items: center; font-size: .9rem; }
+        .borne-entete a, .borne-entete button { color: rgba(255,255,255,.75); background: transparent; border: none; padding: 4px; }
+        .ecran { display: none; padding: 10px 20px 30px; max-width: 1000px; margin: 0 auto; }
+        .ecran.visible { display: block; }
+        .consigne { font-size: 1.4rem; text-align: center; margin: 8px 0 20px; }
+        .grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+        .tuile {
+            background: #fff; color: var(--texte); border: none; border-radius: 14px; padding: 16px 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 1.05rem;
+            position: relative; min-height: 150px; justify-content: center;
+        }
+        .tuile:hover, .tuile:active { background: var(--vert-clair); }
+        .tuile.choisie { outline: 4px solid var(--jaune); }
+        .avatar {
+            width: 72px; height: 72px; border-radius: 50%; background: var(--vert-clair); color: var(--vert-fonce);
+            display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 700; object-fit: cover;
+        }
+        .point { position: absolute; top: 10px; right: 10px; width: 14px; height: 14px; border-radius: 50%; background: #d1d5db; }
+        .point.present { background: #22c55e; }
+        .carte-borne { background: #fff; color: var(--texte); border-radius: 16px; padding: 24px; max-width: 460px; margin: 0 auto; text-align: center; }
+        .code { font-size: 2.4rem; letter-spacing: .5em; min-height: 3.2rem; margin: 10px 0 16px; }
+        .clavier { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .clavier button { font-size: 1.8rem; padding: 18px 0; border-radius: 12px; }
+        .actions-borne { display: grid; gap: 12px; margin-top: 16px; }
+        .actions-borne button { font-size: 1.3rem; padding: 18px; border-radius: 12px; }
+        .actions-borne .arrivee { background: var(--vert); color: #fff; border-color: var(--vert); }
+        .actions-borne .depart { background: var(--rouge); color: #fff; border-color: var(--rouge); }
+        .actions-borne .tache { background: var(--jaune); border-color: var(--jaune); }
+        .retour { margin-top: 18px; }
+        .situation { font-size: 1.05rem; color: var(--gris); margin: 6px 0; }
+        .confirmation { font-size: 1.6rem; padding: 40px 20px; }
+        .confirmation .icone { font-size: 4rem; }
+        .sous-titre { font-size: 1.1rem; margin: 22px 0 10px; }
+        .grille.petite { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        .grille.petite .tuile { min-height: 70px; }
+        .erreur-borne { color: var(--rouge); font-weight: 600; min-height: 1.4em; }
+    </style>
+</head>
+<body>
+<header class="borne-entete">
+    <h1>🍌 Pointage</h1>
+    <div class="horloge" id="horloge"></div>
+    <div class="liens">
+        <a href="/" id="lien-patron" hidden>Tableau de bord</a>
+        <button onclick="deconnexion()">Déconnexion</button>
+    </div>
+</header>
+
+<!-- 1. Choix de l'employé -->
+<section class="ecran visible" id="ecran-accueil">
+    <p class="consigne">Touchez votre nom</p>
+    <div class="grille" id="liste-employes"></div>
+</section>
+
+<!-- 2. Code PIN -->
+<section class="ecran" id="ecran-pin">
+    <div class="carte-borne">
+        <h2 id="pin-nom"></h2>
+        <p>Tapez votre code</p>
+        <div class="code" id="pin-affichage"></div>
+        <div class="erreur-borne" id="pin-erreur"></div>
+        <div class="clavier">
+            <button data-chiffre="1">1</button><button data-chiffre="2">2</button><button data-chiffre="3">3</button>
+            <button data-chiffre="4">4</button><button data-chiffre="5">5</button><button data-chiffre="6">6</button>
+            <button data-chiffre="7">7</button><button data-chiffre="8">8</button><button data-chiffre="9">9</button>
+            <button id="pin-effacer">⌫</button><button data-chiffre="0">0</button><button id="pin-valider" class="principal">OK</button>
+        </div>
+        <button class="retour" onclick="accueil()">Annuler</button>
+    </div>
+</section>
+
+<!-- 3. Actions -->
+<section class="ecran" id="ecran-actions">
+    <div class="carte-borne">
+        <h2 id="actions-nom"></h2>
+        <div id="actions-situation"></div>
+        <div class="erreur-borne" id="actions-erreur"></div>
+        <div class="actions-borne" id="actions-boutons"></div>
+        <button class="retour" onclick="accueil()">Terminé</button>
+    </div>
+</section>
+
+<!-- 4. Choix de la tâche et de la parcelle -->
+<section class="ecran" id="ecran-tache">
+    <p class="consigne">Quelle tâche ?</p>
+    <div class="grille petite" id="liste-taches"></div>
+    <p class="consigne sous-titre">Sur quelle parcelle ?</p>
+    <div class="grille petite" id="liste-parcelles"></div>
+    <div class="carte-borne" style="margin-top:20px">
+        <div class="erreur-borne" id="tache-erreur"></div>
+        <div class="actions-borne">
+            <button class="arrivee" id="tache-valider">Commencer</button>
+        </div>
+        <button class="retour" onclick="afficherEcran('actions')">Retour</button>
+    </div>
+</section>
+
+<!-- 5. Confirmation -->
+<section class="ecran" id="ecran-confirmation">
+    <div class="carte-borne confirmation">
+        <div class="icone">✔</div>
+        <div id="confirmation-texte"></div>
+    </div>
+</section>
+
+<script src="/js/api.js"></script>
+<script src="/js/borne.js"></script>
+</body>
+</html>

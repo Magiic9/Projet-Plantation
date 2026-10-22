@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/taches")
-@CrossOrigin(origins = "*")
 public class TacheController {
 
     @Autowired

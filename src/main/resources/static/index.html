@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plantation · Tableau de bord</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="entete">
+    <h1>🍌 Plantation</h1>
+    <div class="liens">
+        <a href="/borne.html">Ouvrir la borne</a>
+        <button onclick="deconnexion()">Déconnexion</button>
+    </div>
+</header>
+
+<nav class="onglets">
+    <button data-vue="jour" class="actif">Aujourd'hui</button>
+    <button data-vue="employes">Employés</button>
+    <button data-vue="pointages">Pointages</button>
+    <button data-vue="salaires">Salaires</button>
+    <button data-vue="plantation">Parcelles &amp; tâches</button>
+</nav>
+
+<main>
+    <!-- ── Aujourd'hui ─────────────────────────────────────────────────── -->
+    <section class="vue visible" id="vue-jour">
+        <div class="barre">
+            <div class="champ">
+                <label for="jour-date">Date</label>
+                <input type="date" id="jour-date">
+            </div>
+            <button onclick="chargerJour()">Actualiser</button>
+        </div>
+        <div id="jour-alerte"></div>
+        <div class="compteurs" id="jour-compteurs"></div>
+        <div class="carte">
+            <h2>Présence</h2>
+            <div class="tableau">
+                <table>
+                    <thead><tr><th>Employé</th><th>Statut</th><th>Arrivée</th><th>Départ</th><th class="nombre">Heures</th><th>Tâche en cours</th></tr></thead>
+                    <tbody id="jour-presence"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="carte">
+            <h2>Tâches de la journée</h2>
+            <div class="tableau">
+                <table>
+                    <thead><tr><th>Employé</th><th>Tâche</th><th>Parcelle</th><th>Début</th><th>Fin</th><th class="nombre">Durée</th></tr></thead>
+                    <tbody id="jour-travaux"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Employés ────────────────────────────────────────────────────── -->
+    <section class="vue" id="vue-employes">
+        <div class="barre">
+            <div class="champ">
+                <label for="employes-recherche">Rechercher</label>
+                <input id="employes-recherche" placeholder="Nom ou prénom">
+            </div>
+            <label class="case"><input type="checkbox" id="employes-inactifs"> Afficher les inactifs</label>
+            <span class="espace"></span>
+            <button class="principal" onclick="ouvrirEmploye()">+ Ajouter un employé</button>
+        </div>
+        <div class="carte tableau">
+            <table>
+                <thead><tr><th>Nom</th><th>Prénom</th><th>Naissance</th><th class="nombre">Taux horaire</th><th>Code PIN</th><th>Statut</th><th></th></tr></thead>
+                <tbody id="employes-liste"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ── Pointages ───────────────────────────────────────────────────── -->
+    <section class="vue" id="vue-pointages">
+        <div id="pointages-incomplets"></div>
+        <div class="barre">
+            <div class="champ"><label for="pointages-debut">Du</label><input type="date" id="pointages-debut"></div>
+            <div class="champ"><label for="pointages-fin">Au</label><input type="date" id="pointages-fin"></div>
+            <div class="champ"><label for="pointages-employe">Employé</label><select id="pointages-employe"></select></div>
+            <button onclick="chargerPointages()">Afficher</button>
+            <span class="espace"></span>
+            <button class="principal" onclick="ouvrirPointage()">+ Ajouter un pointage</button>
+        </div>
+        <div class="carte tableau">
+            <table>
+                <thead><tr><th>Date</th><th>Employé</th><th>Arrivée</th><th>Départ</th><th class="nombre">Durée</th><th></th></tr></thead>
+                <tbody id="pointages-liste"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ── Salaires ────────────────────────────────────────────────────── -->
+    <section class="vue" id="vue-salaires">
+        <div class="barre">
+            <div class="champ"><label for="salaires-debut">Du</label><input type="date" id="salaires-debut"></div>
+            <div class="champ"><label for="salaires-fin">Au</label><input type="date" id="salaires-fin"></div>
+            <button class="principal" onclick="chargerSalaires()">Calculer</button>
+            <span class="espace"></span>
+            <button onclick="exporterSalaires()">Exporter pour Excel (CSV)</button>
+        </div>
+        <div id="salaires-alerte"></div>
+        <div class="carte tableau">
+            <table>
+                <thead><tr>
+                    <th>Employé</th><th class="nombre">Taux</th><th class="nombre">Jours</th>
+                    <th class="nombre">Heures</th><th class="nombre">dont sup</th>
+                    <th class="nombre">Normal</th><th class="nombre">Heures sup</th><th class="nombre">Total à payer</th>
+                </tr></thead>
+                <tbody id="salaires-liste"></tbody>
+            </table>
+        </div>
+        <p class="aide">Calcul à partir des pointages d'arrivée et de départ. Les heures au-delà du seuil hebdomadaire
+            (réglable dans <code>application.properties</code>) sont majorées. Un pointage sans départ ne compte pas tant qu'il n'est pas corrigé.</p>
+    </section>
+
+    <!-- ── Parcelles & tâches ──────────────────────────────────────────── -->
+    <section class="vue" id="vue-plantation">
+        <div class="deux-colonnes">
+            <div class="carte">
+                <div class="barre"><h2>Parcelles</h2><span class="espace"></span><button class="principal petit" onclick="ouvrirParcelle()">+ Ajouter</button></div>
+                <div class="tableau"><table>
+                    <thead><tr><th>Nom</th><th class="nombre">Surface (ha)</th><th></th></tr></thead>
+                    <tbody id="parcelles-liste"></tbody>
+                </table></div>
+            </div>
+            <div class="carte">
+                <div class="barre"><h2>Tâches</h2><span class="espace"></span><button class="principal petit" onclick="ouvrirTache()">+ Ajouter</button></div>
+                <div class="tableau"><table>
+                    <thead><tr><th>Nom</th><th>Description</th><th></th></tr></thead>
+                    <tbody id="taches-liste"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- ── Fenêtres de saisie ─────────────────────────────────────────────── -->
+<dialog id="dlg-employe">
+    <form method="dialog" id="form-employe">
+        <h3 id="dlg-employe-titre">Employé</h3>
+        <input type="hidden" name="cle">
+        <label>Nom</label><input name="nom" required>
+        <label>Prénom</label><input name="prenom" required>
+        <label>Date de naissance</label><input name="dateNaissance" type="date">
+        <label>Taux horaire (€ / heure)</label><input name="tauxHoraire" type="number" step="0.01" min="0">
+        <label>Code PIN pour la borne</label>
+        <input name="codePin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" autocomplete="off">
+        <div class="aide" id="aide-pin">4 à 6 chiffres. L'employé le tape sur la borne pour pointer.</div>
+        <label>Photo (adresse web, facultatif)</label><input name="photo">
+        <label class="case"><input type="checkbox" name="actif" checked> Employé actif</label>
+        <div class="boutons">
+            <button type="button" onclick="this.closest('dialog').close()">Annuler</button>
+            <button type="submit" class="principal">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="dlg-pointage">
+    <form method="dialog" id="form-pointage">
+        <h3 id="dlg-pointage-titre">Pointage</h3>
+        <input type="hidden" name="cle">
+        <label>Employé</label><select name="employeId" required></select>
+        <label>Date</label><input name="date" type="date" required>
+        <label>Arrivée</label><input name="heureArrivee" type="time" required>
+        <label>Départ</label><input name="heureDepart" type="time">
+        <div class="aide">Laissez le départ vide si l'employé est encore sur place.</div>
+        <div class="boutons">
+            <button type="button" onclick="this.closest('dialog').close()">Annuler</button>
+            <button type="submit" class="principal">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="dlg-parcelle">
+    <form method="dialog" id="form-parcelle">
+        <h3>Parcelle</h3>
+        <input type="hidden" name="cle">
+        <label>Nom</label><input name="nom" required>
+        <label>Surface (hectares)</label><input name="surface" type="number" step="0.01" min="0">
+        <label class="case"><input type="checkbox" name="actif" checked> Active</label>
+        <div class="boutons">
+            <button type="button" onclick="this.closest('dialog').close()">Annuler</button>
+            <button type="submit" class="principal">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="dlg-tache">
+    <form method="dialog" id="form-tache">
+        <h3>Tâche</h3>
+        <input type="hidden" name="cle">
+        <label>Nom</label><input name="nom" required placeholder="ex. : Récolte, Désherbage…">
+        <label>Description</label><textarea name="description" rows="3"></textarea>
+        <label class="case"><input type="checkbox" name="actif" checked> Active</label>
+        <div class="boutons">
+            <button type="button" onclick="this.closest('dialog').close()">Annuler</button>
+            <button type="submit" class="principal">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="/js/api.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
