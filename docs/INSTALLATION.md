@@ -135,7 +135,8 @@ crée un fichier dans `Documents\Sauvegardes-Plantation` et garde les 30 dernier
 Planifiez-le chaque soir avec le Planificateur de tâches (comme à l'étape 5, déclencheur *Quotidien*),
 et copiez régulièrement ce dossier ailleurs (clé USB, disque externe, OneDrive…).
 
-Pour restaurer une sauvegarde :
+Pour restaurer une sauvegarde (adaptez le chemin de `pg_restore.exe` : il est dans le dossier `bin`
+de votre installation PostgreSQL, par exemple `C:\Program Files\bin` ou `C:\Program Files\PostgreSQL\18\bin`) :
 
 ```powershell
 & "C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -U postgres -h localhost -d Plantation --clean "chemin\vers\plantation_AAAA-MM-JJ_HHMM.backup"

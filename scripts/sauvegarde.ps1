@@ -8,8 +8,15 @@ param(
     [int]$Garder = 30
 )
 
-$pgDump = Get-ChildItem "C:\Program Files\PostgreSQL\*\bin\pg_dump.exe" -ErrorAction SilentlyContinue |
-    Sort-Object FullName -Descending | Select-Object -First 1
+# Cherche pg_dump a cote du service PostgreSQL installe, sinon dans le dossier par defaut
+$candidats = @()
+$service = Get-CimInstance Win32_Service -Filter "Name LIKE 'postgresql%'" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($service -and $service.PathName -match '^"?([^"]+\\bin)\\pg_ctl\.exe') {
+    $candidats += Join-Path $Matches[1] "pg_dump.exe"
+}
+$candidats += Get-ChildItem "C:\Program Files\PostgreSQL\*\bin\pg_dump.exe" -ErrorAction SilentlyContinue |
+    Sort-Object FullName -Descending | ForEach-Object { $_.FullName }
+$pgDump = $candidats | Where-Object { Test-Path $_ } | Select-Object -First 1 | ForEach-Object { Get-Item $_ }
 if (-not $pgDump) {
     Write-Error "pg_dump introuvable : PostgreSQL est-il installe ?"
     exit 1
