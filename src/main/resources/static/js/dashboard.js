@@ -340,7 +340,7 @@ async function chargerPlantation() {
     document.getElementById('parcelles-liste').innerHTML = parcelles.length ? parcelles.map(p => `
         <tr class="${p.actif ? '' : 'inactif'}">
             <td>${esc(p.nom)}${p.actif ? '' : ' (inactive)'}</td>
-            <td class="nombre">${p.surface ?? ''}</td>
+            <td class="nombre">${p.surface != null ? p.surface.toLocaleString('fr-FR') : ''}</td>
             ${ligneActions('Parcelle', p)}
         </tr>`).join('') : '<tr><td colspan="3" class="vide">Aucune parcelle.</td></tr>';
     document.getElementById('taches-liste').innerHTML = taches.length ? taches.map(t => `

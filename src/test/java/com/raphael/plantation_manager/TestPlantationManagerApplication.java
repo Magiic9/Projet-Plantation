@@ -45,7 +45,7 @@ public class TestPlantationManagerApplication {
                     e.setCodePin("1234");
                     employes.save(e);
                 }
-                for (String[] p : new String[][] {{"Parcelle Nord", "4.5"}, {"Parcelle Rivière", "3.2"}, {"Grand Champ", "7.0"}}) {
+                for (String[] p : new String[][] {{"Parcelle Nord", "1200"}, {"Parcelle Rivière", "900"}, {"Grand Champ", "1500"}}) {
                     Parcelle parcelle = new Parcelle();
                     parcelle.setNom(p[0]);
                     parcelle.setSurface(Double.parseDouble(p[1]));

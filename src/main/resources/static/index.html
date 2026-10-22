@@ -123,7 +123,7 @@
             <div class="carte">
                 <div class="barre"><h2>Parcelles</h2><span class="espace"></span><button class="principal petit" onclick="ouvrirParcelle()">+ Ajouter</button></div>
                 <div class="tableau"><table>
-                    <thead><tr><th>Nom</th><th class="nombre">Surface (ha)</th><th></th></tr></thead>
+                    <thead><tr><th>Nom</th><th class="nombre">Surface (m²)</th><th></th></tr></thead>
                     <tbody id="parcelles-liste"></tbody>
                 </table></div>
             </div>
@@ -180,7 +180,7 @@
         <h3>Parcelle</h3>
         <input type="hidden" name="cle">
         <label>Nom</label><input name="nom" required>
-        <label>Surface (hectares)</label><input name="surface" type="number" step="0.01" min="0">
+        <label>Surface (m²)</label><input name="surface" type="number" step="1" min="0">
         <label class="case"><input type="checkbox" name="actif" checked> Active</label>
         <div class="boutons">
             <button type="button" onclick="this.closest('dialog').close()">Annuler</button>
