@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion · Plantation</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="page-connexion">
+<form class="carte" method="post" action="/login" id="formulaire">
+    <h1>🍌 Plantation</h1>
+    <p class="aide">Connectez-vous avec le compte du patron ou celui de la borne.</p>
+    <div id="info"></div>
+    <label for="username">Identifiant</label>
+    <input id="username" name="username" autocomplete="username" required autofocus>
+    <label for="password">Mot de passe</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <input type="hidden" name="_csrf" id="csrf">
+    <button type="submit" class="principal">Se connecter</button>
+</form>
+<script src="/js/api.js"></script>
+<script>
+    const params = new URLSearchParams(location.search);
+    const info = document.getElementById('info');
+    if (params.has('erreur')) {
+        info.innerHTML = '<div class="alerte">Identifiant ou mot de passe incorrect.</div>';
+    } else if (params.has('deconnexion')) {
+        info.innerHTML = '<div class="alerte" style="background:#e7f3e7;border-color:#c8e6c9;color:#1f5a22">Vous êtes déconnecté.</div>';
+    }
+    document.getElementById('formulaire').addEventListener('submit', () => {
+        document.getElementById('csrf').value = jetonCsrf();
+    });
+</script>
+</body>
+</html>

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +67,7 @@ public class TravailService {
         travail.setTache(tache);
         travail.setParcelle(parcelle);
         travail.setDate(LocalDate.now());
-        travail.setHeureDebut(LocalTime.now());
+        travail.setHeureDebut(LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
 
         return travailRepository.save(travail);
     }
@@ -75,7 +77,7 @@ public class TravailService {
         if (travail.getHeureFin() != null) {
             throw new RuntimeException("Ce travail est déjà terminé.");
         }
-        travail.setHeureFin(LocalTime.now());
+        travail.setHeureFin(LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
         return travailRepository.save(travail);
     }
 
@@ -83,6 +85,23 @@ public class TravailService {
         return travailRepository.findAll().stream()
                 .filter(t -> t.getDate().equals(LocalDate.now()) && t.getHeureFin() == null)
                 .toList();
+    }
+
+    public Optional<Travail> findEnCoursParEmploye(Long employeId) {
+        return findAujourdhuiParEmploye(employeId).stream()
+                .filter(t -> t.getHeureFin() == null)
+                .findFirst();
+    }
+
+    /** Termine toutes les tâches du jour encore ouvertes pour un employé. Retourne le nombre terminé. */
+    public int terminerTravauxEnCours(Long employeId) {
+        List<Travail> enCours = findAujourdhuiParEmploye(employeId).stream()
+                .filter(t -> t.getHeureFin() == null)
+                .toList();
+        LocalTime maintenant = LocalTime.now().truncatedTo(ChronoUnit.SECONDS);
+        enCours.forEach(t -> t.setHeureFin(maintenant));
+        travailRepository.saveAll(enCours);
+        return enCours.size();
     }
 
     /**
