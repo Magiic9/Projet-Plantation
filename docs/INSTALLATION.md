@@ -25,7 +25,12 @@ Ouvrez **pgAdmin** (installé avec PostgreSQL) ou SQL Shell, puis :
 CREATE DATABASE "Plantation";
 ```
 
-Les tables sont créées automatiquement au premier démarrage de l'application.
+Les tables sont créées automatiquement au premier démarrage de l'application
+(et adaptées automatiquement si la base vient d'une version précédente).
+
+Pour avoir des données d'exemple (4 semaines de pointages et de tâches, code PIN `1234`),
+ouvrez [`sql/mise-a-jour-et-donnees-test.sql`](../sql/mise-a-jour-et-donnees-test.sql) dans DBeaver
+et exécutez-le. **Attention : il efface tous les travaux et pointages existants.**
 
 ## 3. Définir les mots de passe
 
